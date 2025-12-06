@@ -26,9 +26,9 @@ spec:
         ingress:
           ingressClassName: traefik
           host: longhorn.mgmt.arpa
-          tls: false
+          tls: true
           annotations:
-            traefik.ingress.kubernetes.io/router.entrypoints: web
+            traefik.ingress.kubernetes.io/router.entrypoints: websecure
   destination:
     server: https://kubernetes.default.svc
     namespace: longhorn-system
