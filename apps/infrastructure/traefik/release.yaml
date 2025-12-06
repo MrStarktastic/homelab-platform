@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  finalizers: ["resources-finalizer.argocd.argoproj.io"]
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  project: default
+  source:
+    repoURL: https://traefik.github.io/charts
+    chart: traefik
+    targetRevision: 37.4.0
+    helm:
+      values: |
+        deployment:
+          replicas: 2
+        ingressClass:
+          enabled: true
+          isDefaultClass: true
+        ports:
+          web:
+            redirectTo: websecure
+          websecure:
+            tls:
+              enabled: true
+        service:
+          enabled: true
+          type: LoadBalancer
+          annotations:
+            kube-vip.io/loadbalancerIPs: "10.9.9.90,10.9.8.90"
+        # By default, we DO NOT expose the dashboard on the LoadBalancer.
+        # We will expose it via Ingress later, protected by Middleware.
+        ingressRoute:
+          dashboard:
+            enabled: false
+        providers:
+          kubernetesCRD:
+            allowCrossNamespace: true
+          kubernetesIngress:
+            allowCrossNamespace: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
