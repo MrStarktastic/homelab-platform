@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: starktastic-net-cert
+  namespace: traefik-system
+spec:
+  secretName: starktastic-net-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: "*.starktastic.net"
+  dnsNames:
+  - "starktastic.net"
+  - "*.starktastic.net"
+  - "*.internal.starktastic.net"
