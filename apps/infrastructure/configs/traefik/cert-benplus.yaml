@@ -4,7 +4,7 @@ metadata:
   name: benplus-vip-cert
   namespace: traefik-system
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   secretName: benplus-vip-tls
   issuerRef:
