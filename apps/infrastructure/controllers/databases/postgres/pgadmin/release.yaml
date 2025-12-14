@@ -15,16 +15,10 @@ spec:
     helm:
       values: |
         env:
-          - name: email
-            valueFrom:
-              secretKeyRef:
-                name: pgadmin-secret
-                key: email
-          - name: password
-            valueFrom:
-              secretKeyRef:
-                name: pgadmin-secret
-                key: password
+          email: "benfaingold@gmail.com"
+        existingSecret: "pgadmin-secret"
+        secretKeys:
+          pgadminPasswordKey: "password"
         persistentVolume:
           enabled: true
           storageClass: "nfs-pv"
