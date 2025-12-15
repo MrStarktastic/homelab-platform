@@ -31,7 +31,7 @@ spec:
               Name: "Starktastic Postgres"
               Group: "Servers"
               Username: "postgres"
-              Host: "postgres-postgresql.databases.svc.cluster.local"
+              Host: "postgres-postgresql"
               Port: 5432
               SSLMode: "prefer"
               MaintenanceDB: "postgres"

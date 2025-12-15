@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: authentik
+  namespace: argocd
+  finalizers: ["resources-finalizer.argocd.argoproj.io"]
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://charts.goauthentik.io
+    chart: authentik
+    targetRevision: 2025.10.2
+    helm:
+      values: |
+        postgresql:
+          enabled: false
+        redis:
+          enabled: false
+        authentik:
+          log_level: info
+          postgresql:
+            host: "postgres-postgresql.databases.svc.cluster.local"
+            name: "authentik"
+            user: "authentik"
+            port: 5432
+          redis:
+            host: "redis-redis.databases.svc.cluster.local"
+            port: 6379
+        server:
+          envFrom:
+            - secretRef:
+                name: authentik-secret
+        worker:
+          envFrom:
+            - secretRef:
+                name: authentik-secret
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: authentik
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
