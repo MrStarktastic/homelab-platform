@@ -14,6 +14,8 @@ spec:
       middlewares:
         - name: rate-limit-strong
           namespace: traefik-system
+        - name: authentik-middleware
+          namespace: authentik
       services:
         - name: pgadmin-pgadmin4
           port: 80
