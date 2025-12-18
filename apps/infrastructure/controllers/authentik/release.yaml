@@ -28,16 +28,23 @@ spec:
           redis:
             host: "redis-redis.databases.svc.cluster.local"
             port: 6379
-        email:
-          host: "smtp.eu.mailgun.org"
-          port: 587
-          username: "postmaster@benplus.vip"
-          use_tls: true
-          use_ssl: false
-          timeout: 10
-          from: "noreply@benplus.vip"
         server:
           env:
+            - name: AUTHENTIK_EMAIL__HOST
+              value: "smtp.eu.mailgun.org"
+            - name: AUTHENTIK_EMAIL__PORT
+              value: "587"
+            - name: AUTHENTIK_EMAIL__FROM
+              value: "noreply@benplus.vip"
+            - name: AUTHENTIK_EMAIL__USE_TLS
+              value: "true"
+            - name: AUTHENTIK_EMAIL__TIMEOUT
+              value: "10"
+            - name: AUTHENTIK_EMAIL__USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-authentik-secret
+                  key: username
             - name: AUTHENTIK_EMAIL__PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -54,6 +61,21 @@ spec:
                 name: authentik-secret
         worker:
           env:
+            - name: AUTHENTIK_EMAIL__HOST
+              value: "smtp.eu.mailgun.org"
+            - name: AUTHENTIK_EMAIL__PORT
+              value: "587"
+            - name: AUTHENTIK_EMAIL__FROM
+              value: "noreply@benplus.vip"
+            - name: AUTHENTIK_EMAIL__USE_TLS
+              value: "true"
+            - name: AUTHENTIK_EMAIL__TIMEOUT
+              value: "10"
+            - name: AUTHENTIK_EMAIL__USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-authentik-secret
+                  key: username
             - name: AUTHENTIK_EMAIL__PASSWORD
               valueFrom:
                 secretKeyRef:
