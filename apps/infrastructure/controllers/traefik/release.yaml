@@ -37,6 +37,7 @@ spec:
           enabled: true
           type: LoadBalancer
           loadBalancerIP: "10.9.8.90"
+          externalTrafficPolicy: Local
           annotations:
             kube-vip.io/loadbalancerIPs: "10.9.8.90"
         persistence:
