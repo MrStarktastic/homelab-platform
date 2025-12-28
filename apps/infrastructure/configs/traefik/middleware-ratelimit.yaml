@@ -3,6 +3,8 @@ kind: Middleware
 metadata:
   name: rate-limit-strong
   namespace: traefik-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   rateLimit:
     # Allowed requests per second on average

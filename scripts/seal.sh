@@ -23,6 +23,6 @@ kubectl create secret generic $SECRET_NAME \
   kubeseal \
     --controller-name=sealed-secrets-controller \
     --controller-namespace=kube-system \
-    --format yaml > apps/infrastructure/configs/$NAMESPACE/$SECRET_NAME.yaml
+    --format yaml > $SECRET_NAME.yaml  # Save to current dir
 
-echo "✅ Done! Saved to apps/infrastructure/configs/$NAMESPACE/$SECRET_NAME.yaml"
+echo "✅ Done! Saved $SECRET_NAME.yaml"

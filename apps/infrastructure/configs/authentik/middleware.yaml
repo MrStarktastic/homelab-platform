@@ -4,7 +4,7 @@ metadata:
   name: authentik-middleware
   namespace: authentik
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   forwardAuth:
     address: http://authentik-server.authentik.svc.cluster.local/outpost.goauthentik.io/auth/traefik
