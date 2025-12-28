@@ -69,7 +69,9 @@ spec:
           kubernetesCRD:
             allowCrossNamespace: true
           kubernetesIngress:
-            allowCrossNamespace: true
+            allowExternalNameServices: true
+            publishedService:
+              enabled: true
   destination:
     server: https://kubernetes.default.svc
     namespace: traefik-system
