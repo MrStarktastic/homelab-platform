@@ -17,8 +17,6 @@ spec:
         name: intel-gpu
         nodeFeatureRule: false
         sharedDevNum: 1
-        nodeSelector:
-          intel.gpu: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
