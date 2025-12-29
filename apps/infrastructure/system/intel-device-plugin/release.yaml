@@ -16,8 +16,7 @@ spec:
     helm:
       values: |
         name: intel-gpu
-        nodeFeatureRule:
-          enabled: false
+        nodeFeatureRule: false
         sharedDevNum: 1
         nodeSelector:
           intel.gpu: "true"
