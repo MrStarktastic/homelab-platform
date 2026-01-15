@@ -1,7 +1,7 @@
-name: intel-device-operator
+name: intel-gpu-plugin
 namespace: kube-system
-syncWave: "-3"
+syncWave: "-1"
 chart:
   repo: https://intel.github.io/helm-charts
-  name: intel-device-plugins-operator
+  name: intel-device-plugins-gpu
   version: 0.34.1

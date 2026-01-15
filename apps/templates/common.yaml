@@ -16,4 +16,3 @@ persistence:
     accessMode: ReadWriteMany
     globalMounts:
       - path: /config
-
