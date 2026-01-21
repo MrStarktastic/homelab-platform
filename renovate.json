@@ -17,7 +17,7 @@
     {
       "description": "Update default app-template in services AppSet",
       "customType": "regex",
-      "fileMatch": ["^apps/bootstrap/appset-services\\.yaml$"],
+      "fileMatch": ["^apps/bootstrap/appsets/services\\.yaml$"],  
       "matchStrings": [
         "repoURL: '{{ dig \"chart\" \"repo\" \"(?<registryUrl>.*?)\" \\. }}'[\\s\\S]*?chart: '{{ dig \"chart\" \"name\" \"(?<depName>.*?)\" \\. }}'[\\s\\S]*?targetRevision: '{{ dig \"chart\" \"version\" \"(?<currentValue>.*?)\" \\. }}'"
       ],
