@@ -23,4 +23,3 @@ spec:
         - name: authentik-server
           port: 80
   tls: {}
-

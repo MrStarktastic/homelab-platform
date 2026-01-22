@@ -18,4 +18,3 @@ spec:
         - name: authentik-middleware
           namespace: authentik
   tls: {}
-

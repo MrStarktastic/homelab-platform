@@ -6,4 +6,3 @@ metadata:
 spec:
   defaultCertificate:
     secretName: starktastic-net-tls
-

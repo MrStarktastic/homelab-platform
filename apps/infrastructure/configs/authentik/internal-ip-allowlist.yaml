@@ -12,4 +12,3 @@ spec:
       - "10.9.10.0/24"  # WireGuard
       - "10.42.0.0/16"  # Internal Service Communication
       - "127.0.0.1/32"  # Localhost
-
