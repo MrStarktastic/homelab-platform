@@ -41,7 +41,12 @@ jobs:
           YAMLLINT_CONFIG_FILE: .github/yamllint.yaml
 
       - name: Validate static manifests
-        run: find . -type f -name '*.yaml' -path '*/manifests/*' -print0 | xargs -0 kubeconform -verbose -ignore-missing-schemas -summary
+        run: |
+          find . -type f -name '*.yaml' -path '*/manifests/*' -print0 | xargs -0 kubeconform \
+            -verbose \
+            -summary \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
 
       - name: Generate Full Manifests
         env:
@@ -67,7 +72,11 @@ jobs:
           done
 
           echo "Validating..."
-          cat all_manifests.yaml | kubeconform -verbose -ignore-missing-schemas -summary
+          cat all_manifests.yaml | kubeconform \
+            -verbose \
+            -summary \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
 
       - name: Upload Manifests
         uses: actions/upload-artifact@v4
