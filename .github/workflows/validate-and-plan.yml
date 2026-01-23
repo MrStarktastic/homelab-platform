@@ -83,7 +83,6 @@ jobs:
         run: |
           kubectl config set-context --current --namespace=argocd
           touch all_manifests.yaml
-          shopt -s nullglob # Prevents loop errors if no files match
 
           echo "Processing AppSets..."
           for appset in apps/bootstrap/appsets/*.yaml; do
@@ -101,6 +100,12 @@ jobs:
             echo "---" >> all_manifests.yaml
             cat $app >> all_manifests.yaml
           done
+
+      - name: "[DEBUG] Inspect Generated Manifests"
+        run: |
+          echo "================ ALL MANIFESTS YAML ================"
+          cat all_manifests.yaml
+          echo "===================================================="
 
       - name: Run Diff
         id: diff
@@ -131,9 +136,3 @@ jobs:
           fi
 
           cat plan.md
-
-      - name: "[DEBUG] Inspect Generated Manifests"
-        run: |
-          echo "================ ALL MANIFESTS YAML ================"
-          cat all_manifests.yaml
-          echo "===================================================="
