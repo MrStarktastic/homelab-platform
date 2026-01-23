@@ -87,9 +87,7 @@ jobs:
           echo "Processing AppSets..."
           for appset in apps/bootstrap/appsets/*.yaml; do
             echo "Generating from: $appset"
-            # Time Travel Patching
             yq -i ".spec.generators[0].git.revision = \"$PR_SHA\"" $appset
-            echo "---" >> all_manifests.yaml
             argocd appset generate --core --loglevel error -o yaml $appset | yq -P '.[]' >> all_manifests.yaml
           done
 
@@ -97,7 +95,6 @@ jobs:
           for app in apps/bootstrap/*.yaml; do
             echo "Processing App: $app"
             yq -i ".spec.source.targetRevision = \"$PR_SHA\"" $app
-            echo "---" >> all_manifests.yaml
             cat $app >> all_manifests.yaml
           done
 
