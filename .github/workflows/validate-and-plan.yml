@@ -49,7 +49,7 @@ jobs:
         if: always()
         run: |
           echo "### 🛡️ Static Validation" > validation-report.md
-          
+
           if [ "${{ steps.yamllint.outputs.exit_code }}" -eq 0 ]; then
             echo "✅ **YAML Lint:** Passed" >> validation-report.md
           else
@@ -58,7 +58,7 @@ jobs:
             cat yamllint.txt >> validation-report.md
             echo "</pre></details>" >> validation-report.md
           fi
-          
+
           if [ "${{ steps.kubeconform.outputs.exit_code }}" -eq 0 ]; then
              echo "✅ **Kubeconform:** Passed" >> validation-report.md
              echo "<details><summary>Summary</summary><pre>" >> validation-report.md
