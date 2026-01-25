@@ -144,7 +144,7 @@ jobs:
         run: |
           # echo "🔎 Inspecting Traefik Application in all_manifests.yaml:"
           # yq '. | select(.metadata.name == "traefik")' all_manifests.yaml
-          cat all_manfests.yaml
+          cat all_manifests.yaml
 
       - name: Setup Dyff
         run: |
