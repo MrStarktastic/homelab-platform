@@ -181,6 +181,7 @@ jobs:
           fi
 
       - name: Upload plan artifact
+        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: plan-report
