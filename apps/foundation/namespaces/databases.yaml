@@ -4,5 +4,3 @@ metadata:
   name: databases
   labels:
     name: databases
-  annotations:
-    argocd.argoproj.io/sync-wave: "-5"
