@@ -20,6 +20,7 @@ jobs:
       - name: Prettier Action
         uses: creyD/prettier_action@v4.6
         with:
+          github_token: ${{ github.token }}
           prettier_options: --write **/*.{yaml,yml,json}
 
       - name: sh-checker
