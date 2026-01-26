@@ -19,5 +19,5 @@ jobs:
       - name: Prettier
         uses: creyD/prettier_action@v4.6
         with:
-          prettier_plugins: "prettier-plugin-sh"
+          prettier_plugins: "@prettier/plugin-sh"
           prettier_options: --write **/*.{yaml,yml,json,sh}
