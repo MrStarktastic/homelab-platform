@@ -1,23 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "argocd": {
-    "managerFilePatterns": [
-      "/\\.yaml$/"
-    ]
+    "managerFilePatterns": ["/\\.yaml$/"]
   },
   "kubernetes": {
-    "fileMatch": [
-      "\\.yaml$"
-    ]
+    "fileMatch": ["\\.yaml$"]
   },
   "customManagers": [
     {
       "description": "Update default app-template in services AppSet",
       "customType": "regex",
-      "fileMatch": ["^apps/bootstrap/appsets/services\\.yaml$"],  
+      "fileMatch": ["^apps/bootstrap/appsets/services\\.yaml$"],
       "matchStrings": [
         "repoURL: '{{ dig \"chart\" \"repo\" \"(?<registryUrl>.*?)\" \\. }}'[\\s\\S]*?chart: '{{ dig \"chart\" \"name\" \"(?<depName>.*?)\" \\. }}'[\\s\\S]*?targetRevision: '{{ dig \"chart\" \"version\" \"(?<currentValue>.*?)\" \\. }}'"
       ],
@@ -27,22 +21,15 @@
     {
       "description": "Update Helm charts in app.yaml via JSONata",
       "customType": "jsonata",
-      "fileMatch": [
-        "^apps/.*/app\\.yaml$"
-      ],
-      "matchStrings": [
-        "chart.{ 'depName': name, 'registryUrl': repo, 'currentValue': version }"
-      ],
+      "fileMatch": ["^apps/.*/app\\.yaml$"],
+      "matchStrings": ["chart.{ 'depName': name, 'registryUrl': repo, 'currentValue': version }"],
       "datasourceTemplate": "helm",
       "fileFormat": "yaml"
     },
     {
       "description": "Update Docker images recursively via JSONata",
       "customType": "jsonata",
-      "fileMatch": [
-        "^apps/.*/app\\.yaml$",
-        "^apps/.*/values\\.yaml$"
-      ],
+      "fileMatch": ["^apps/.*/app\\.yaml$", "^apps/.*/values\\.yaml$"],
       "matchStrings": [
         "**. { 'depName': repository, 'currentDigest': digest, 'currentValue': $exists(tag) ? tag : 'latest' } ? [depName] : []"
       ],

@@ -12,4 +12,4 @@ spec:
     kind: ClusterIssuer
   commonName: "argocd.internal.starktastic.net"
   dnsNames:
-  - "argocd.internal.starktastic.net"
+    - "argocd.internal.starktastic.net"

@@ -12,6 +12,6 @@ spec:
     kind: ClusterIssuer
   commonName: "*.starktastic.net"
   dnsNames:
-  - "starktastic.net"
-  - "*.starktastic.net"
-  - "*.internal.starktastic.net"
+    - "starktastic.net"
+    - "*.starktastic.net"
+    - "*.internal.starktastic.net"

@@ -12,5 +12,5 @@ spec:
     kind: ClusterIssuer
   commonName: "*.benplus.vip"
   dnsNames:
-  - "benplus.vip"
-  - "*.benplus.vip"
+    - "benplus.vip"
+    - "*.benplus.vip"
