@@ -14,6 +14,5 @@ exec dyff between \
   --exclude "/metadata/annotations/kubectl.kubernetes.io/last-applied-configuration" \
   --exclude "/metadata/annotations/argocd.argoproj.io/tracking-id" \
   --exclude "/status" \
-  --exclude "/spec/source/targetRevision" \
-  --exclude-regexp "^/spec/sources/[^/]+/targetRevision$" \
+  --exclude-regexp ".*targetRevision.*" \
   "$@"
