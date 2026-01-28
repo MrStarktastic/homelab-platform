@@ -239,8 +239,6 @@ jobs:
             cat artifacts/plan-report.md >> comment.md
           fi
 
-          cat comment.md
-
       - name: Post comment
         uses: marocchino/sticky-pull-request-comment@v2.9.4
         with:
