@@ -244,8 +244,7 @@ jobs:
           {
             echo "COMMENT<<$EOF"
             cat comment.md
-            echo "$EOF"
-          } >> "$GITHUB_ENV"
+          } >> $GITHUB_ENV
 
       - name: Print comment env variable (for debugging)
         run: |
