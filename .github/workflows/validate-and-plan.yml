@@ -227,36 +227,21 @@ jobs:
         run: |
           touch comment.md
 
-          ls -la artifacts
-
-          if [ -f artifacts/validation-report/validation-report.md ]; then
-            cat artifacts/validation-report/validation-report.md >> comment.md
+          if [ -f artifacts/validation-report.md ]; then
+            cat artifacts/validation-report.md >> comment.md
             echo "" >> comment.md
             echo "---" >> comment.md
             echo "" >> comment.md
           fi
 
-          if [ -f artifacts/plan-report/plan-report.md ]; then
-            cat artifacts/plan-report/plan-report.md >> comment.md
+          if [ -f artifacts/plan-report.md ]; then
+            cat artifacts/plan-report.md >> comment.md
           fi
 
           cat comment.md
-
-      - name: Convert comment to env variable
-        run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          {
-            echo "COMMENT<<$EOF"
-            cat comment.md
-            echo $EOF
-          } >> $GITHUB_ENV
-
-      - name: Print comment env variable (for debugging)
-        run: |
-          echo "$COMMENT"
 
       - name: Post comment
         uses: marocchino/sticky-pull-request-comment@v2.9.4
         with:
           header: ci-report
-          message: ${{ env.COMMENT }}
+          path: comment.md
