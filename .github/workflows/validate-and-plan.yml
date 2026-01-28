@@ -121,22 +121,40 @@ jobs:
           curl -sSLo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           chmod +x /usr/local/bin/yq
 
-      - name: Generate Raw Diff
+      - name: Setup Dyff
+        run: |
+          curl -sL https://github.com/homeport/dyff/releases/download/v1.10.3/dyff_1.10.3_linux_amd64.tar.gz | tar xz
+          mv dyff /usr/local/bin/
+          chmod +x /usr/local/bin/dyff
+
+      - name: Generate raw diff
         run: |
           echo "### 📄 Raw File Changes" > plan.md
 
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git fetch origin ${{ github.base_ref }}
-          CHANGES=$(git diff origin/${{ github.base_ref }}...HEAD -- apps/ | cat)
 
-          if [ -z "$CHANGES" ]; then
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- apps/ | grep -E '\.(yaml|yml)$' || true)
+
+          if [ -z "$CHANGED_FILES" ]; then
             echo "No raw manifest changes detected." >> plan.md
           else
             echo "<details><summary>Click to expand</summary>" >> plan.md
             echo "" >> plan.md
-            echo "\`\`\`diff" >> plan.md
-            echo "$CHANGES" >> plan.md
-            echo "\`\`\`" >> plan.md
+
+            for file in $CHANGED_FILES; do
+              echo "#### Changes in \`$file\`" >> plan.md
+              echo "\`\`\`text" >> plan.md
+
+              if git show "origin/${{ github.base_ref }}:$file" > old_version.yaml 2>/dev/null; then
+                 dyff between --color=off old_version.yaml "$file" >> plan.md
+              else
+                 echo "New file created." >> plan.md
+              fi
+
+              echo "\`\`\`" >> plan.md
+            done
+
             echo "</details>" >> plan.md
           fi
           echo "" >> plan.md
@@ -165,12 +183,6 @@ jobs:
             echo "---" >> all_manifests.yaml
             cat $app >> all_manifests.yaml
           done
-
-      - name: Setup Dyff
-        run: |
-          curl -sL https://github.com/homeport/dyff/releases/download/v1.10.3/dyff_1.10.3_linux_amd64.tar.gz | tar xz
-          mv dyff /usr/local/bin/
-          chmod +x /usr/local/bin/dyff
 
       - name: Run dyff
         run: |
@@ -222,20 +234,21 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           path: artifacts
+          merge-multiple: true
 
       - name: Assemble comment
         run: |
           touch comment.md
 
-          if [ -f artifacts/validation-report/validation-report.md ]; then
-            cat artifacts/validation-report/validation-report.md >> comment.md
+          if [ -f artifacts/validation-report.md ]; then
+            cat artifacts/validation-report.md >> comment.md
             echo "" >> comment.md
             echo "---" >> comment.md
             echo "" >> comment.md
           fi
 
-          if [ -f artifacts/plan-report/plan.md ]; then
-            cat artifacts/plan-report/plan.md >> comment.md
+          if [ -f artifacts/plan.md ]; then
+            cat artifacts/plan.md >> comment.md
           fi
 
       - name: Post comment
