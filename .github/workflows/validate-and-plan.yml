@@ -221,14 +221,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v7
         with:
-          name: validation-report
-          path: artifacts/validation-report.md
-
-      - name: Download plan artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: plan-report
-          path: artifacts/plan-report.md
+          path: artifacts
 
       - name: Assemble comment
         run: |
