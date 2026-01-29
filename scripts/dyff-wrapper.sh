@@ -16,18 +16,18 @@ if [ -d "$LIVE" ]; then
     if [ -f "$MERGED/$filename" ]; then
       # Recurse
       OUTPUT=$("$0" "$LIVE/$filename" "$MERGED/$filename")
-      local_exit_code=$?
+      RET=$?
 
-      if [ $local_exit_code -ne 0 ]; then
-        KIND=$(yq '.kind // "Unknown"' "$MERGED/$filename")
+      if [ $RET -ne 0 ]; then
+        EXIT_CODE=1
+
         NAME=$(yq '.metadata.name // "Unknown"' "$MERGED/$filename")
 
         echo "---------------------------------------------------------"
-        echo "Resource: $KIND / $NAME"
+        echo "$NAME"
         echo "---------------------------------------------------------"
         echo "$OUTPUT"
         echo ""
-        EXIT_CODE=1
       fi
     fi
   done
