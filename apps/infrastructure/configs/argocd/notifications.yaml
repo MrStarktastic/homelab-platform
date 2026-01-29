@@ -10,23 +10,45 @@ data:
     url: https://ntfy.starktastic.net/starktastic_ops
     headers:
       - name: Authorization
-        value: Basic $ntfy-credentials
+        value: Basic $ntfy-secret:ntfy-credentials
+      - name: Content-Type
+        value: application/json
 
   template.app-sync-failed: |
-    message: |
-      {{.app.metadata.name}} failed syncing.
-      Reason: {{.app.status.operationState.message}}
-    ntfy:
-      priority: 5
-      tags: error,skull
-      click: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+    webhook:
+      ntfy:
+        method: POST
+        body: |
+          {
+            "topic": "starktastic_ops",
+            "title": "Sync Failed: {{.app.metadata.name}}",
+            "message": "Reason: {{.app.status.operationState.message}}",
+            "tags": ["skull", "error"],
+            "priority": 5,
+            "actions": [{
+              "action": "view",
+              "label": "Open ArgoCD",
+              "url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+            }]
+          }
 
   template.app-sync-succeeded: |
-    message: Application {{.app.metadata.name}} synced successfully.
-    ntfy:
-      priority: 3
-      tags: white_check_mark
-      click: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+    webhook:
+      ntfy:
+        method: POST
+        body: |
+          {
+            "topic": "starktastic_ops",
+            "title": "Sync Succeeded: {{.app.metadata.name}}",
+            "message": "Configuration successfully applied.",
+            "tags": ["white_check_mark"],
+            "priority": 3,
+            "actions": [{
+              "action": "view",
+              "label": "Open ArgoCD",
+              "url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+            }]
+          }
 
   trigger.on-sync-failed: |
     - description: Application syncing has failed
@@ -37,5 +59,3 @@ data:
     - description: Application syncing succeeded
       send: [app-sync-succeeded]
       when: app.status.operationState.phase in ['Succeeded']
-
-# Triggering a sync test
