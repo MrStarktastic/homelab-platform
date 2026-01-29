@@ -14,18 +14,19 @@ if [ -d "$LIVE" ]; then
     filename=$(basename "$manifest")
 
     if [ -f "$MERGED/$filename" ]; then
-      # Extract Resource Name for better readability
-      KIND=$(yq '.kind // "Unknown"' "$MERGED/$filename")
-      NAME=$(yq '.metadata.name // "Unknown"' "$MERGED/$filename")
-
-      echo "---------------------------------------------------------"
-      echo "Resource: $KIND / $NAME"
-      echo "---------------------------------------------------------"
-
       # Recurse
-      "$0" "$LIVE/$filename" "$MERGED/$filename"
+      OUTPUT=$("$0" "$LIVE/$filename" "$MERGED/$filename")
+      local_exit_code=$?
 
-      if [ $? -ne 0 ]; then
+      if [ $local_exit_code -ne 0 ]; then
+        KIND=$(yq '.kind // "Unknown"' "$MERGED/$filename")
+        NAME=$(yq '.metadata.name // "Unknown"' "$MERGED/$filename")
+
+        echo "---------------------------------------------------------"
+        echo "Resource: $KIND / $NAME"
+        echo "---------------------------------------------------------"
+        echo "$OUTPUT"
+        echo ""
         EXIT_CODE=1
       fi
     fi
