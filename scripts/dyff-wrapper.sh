@@ -17,7 +17,7 @@ if [ -d "$LIVE" ]; then
       # Extract Resource Name for better readability
       KIND=$(yq '.kind // "Unknown"' "$MERGED/$filename")
       NAME=$(yq '.metadata.name // "Unknown"' "$MERGED/$filename")
-      
+
       echo "---------------------------------------------------------"
       echo "Resource: $KIND / $NAME"
       echo "---------------------------------------------------------"
