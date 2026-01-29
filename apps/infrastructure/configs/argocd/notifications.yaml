@@ -10,7 +10,7 @@ data:
     url: https://ntfy.starktastic.net/starktastic_ops
     headers:
       - name: Authorization
-        value: Basic $ntfy-password
+        value: Basic $ntfy-credentials
 
   template.app-sync-failed: |
     message: |
