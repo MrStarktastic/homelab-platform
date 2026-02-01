@@ -1,0 +1,168 @@
+# Homelab Platform
+
+GitOps repository for managing a Kubernetes homelab using ArgoCD with an App-of-Apps pattern.
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Bootstrap                                │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
+│  │  foundation  │  │ infra-configs│  │     ApplicationSets    │ │
+│  │  (wave -10)  │  │   (wave 1)   │  │  infra.yaml services   │ │
+│  └──────┬───────┘  └──────┬───────┘  └──────────┬─────────────┘ │
+└─────────┼─────────────────┼─────────────────────┼───────────────┘
+          │                 │                     │
+          ▼                 ▼                     ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────┐
+│   Foundation    │  │     Configs     │  │      Controllers        │
+│                 │  │                 │  │                         │
+│  • Namespaces   │  │  • Ingresses    │  │  • Helm Charts          │
+│  • RBAC         │  │  • Certs        │  │  • Values + Manifests   │
+│                 │  │  • Middlewares  │  │                         │
+└─────────────────┘  └─────────────────┘  └─────────────────────────┘
+```
+
+## 📁 Directory Structure
+
+```
+apps/
+├── bootstrap/              # Entry point - deploy these first
+│   ├── foundation.yaml     # Creates namespaces (sync-wave: -10)
+│   ├── infra-configs.yaml  # Deploys configs after controllers (sync-wave: 1)
+│   └── appsets/
+│       ├── infra.yaml      # ApplicationSet for infrastructure controllers
+│       └── services.yaml   # ApplicationSet for user services
+│
+├── foundation/             # Namespace definitions
+│   └── namespaces/
+│
+├── infrastructure/
+│   ├── configs/            # Non-Helm resources (ingresses, certs, etc.)
+│   ├── controllers/        # Helm-based apps (each has app.yaml + values.yaml)
+│   │   ├── authentik/
+│   │   ├── databases/
+│   │   └── traefik/
+│   └── system/             # Cluster-level components
+│       ├── cert-manager/
+│       ├── sealed-secrets/
+│       └── nfs-provisioner/
+│
+├── services/               # User-facing applications
+│   ├── media/              # Prowlarr, qBittorrent, etc.
+│   └── operations/         # ntfy, monitoring, etc.
+│
+├── templates/
+│   └── common.yaml         # Shared Helm values for app-template
+│
+└── scripts/                # Utility scripts
+    ├── seal.sh             # Seal secrets with kubeseal
+    └── dyff-wrapper.sh     # YAML diff for CI
+```
+
+## 🚀 Bootstrap Order
+
+The deployment follows a strict ordering via ArgoCD sync-waves:
+
+| Wave | Component | Description |
+|------|-----------|-------------|
+| -10 | `foundation` | Namespaces and basic RBAC |
+| 0 | `infra` ApplicationSet | Infrastructure controllers (Traefik, DBs, Auth) |
+| 1 | `infra-configs` | Ingress routes, certificates, middlewares |
+| 2 | `services` ApplicationSet | User applications |
+
+## 🔐 Secret Management
+
+This repository uses [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets) for encrypting secrets in Git.
+
+### Sealing a Secret
+
+```bash
+# Namespace-scoped (strict) - default
+./scripts/seal.sh <secret-name> <namespace>
+
+# Cluster-wide scope
+./scripts/seal.sh <secret-name> <namespace> --cluster-wide
+```
+
+The script will prompt you to enter key-value pairs interactively (press Ctrl+D when done).
+
+## 📦 Adding a New Application
+
+### Infrastructure Controller (Helm-based)
+
+1. Create directory: `apps/infrastructure/controllers/<name>/`
+2. Add `app.yaml`:
+   ```yaml
+   name: my-app
+   namespace: my-namespace
+   syncWave: "0"
+   chart:
+     repo: https://charts.example.com
+     name: my-chart
+     version: 1.0.0
+   # Optional: ignore auto-generated fields
+   ignoreDifferences:
+     - group: ""
+       kind: Secret
+       jsonPointers:
+         - /data/password
+   ```
+3. Add `values.yaml` with Helm values
+4. Add any extra manifests to `manifests/`
+
+### Service (using app-template)
+
+1. Create directory: `apps/services/<category>/<name>/`
+2. Add `app.yaml`:
+   ```yaml
+   name: my-service
+   namespace: my-namespace
+   syncWave: "5"
+   ```
+3. Add `values.yaml` (extends `templates/common.yaml`)
+
+## 🔧 Configuration
+
+### ApplicationSet Features
+
+- **Auto-sync**: Changes in Git are automatically applied
+- **Self-heal**: Drift from Git state is corrected
+- **Server-Side Apply**: Reduces conflicts with controllers
+- **Pruning**: Removed resources are deleted
+
+### ignoreDifferences
+
+For apps that generate secrets or have controller-managed fields, add to `app.yaml`:
+
+```yaml
+ignoreDifferences:
+  - group: ""
+    kind: Secret
+    jsonPointers:
+      - /data/password
+```
+
+## 🛠️ Development
+
+### Prerequisites
+
+- ArgoCD installed with access to this repository
+- `kubeseal` CLI for secret management
+- `kubectl` configured for your cluster
+
+### Validating Changes
+
+```bash
+# Lint YAML files
+yamllint .
+
+# Diff changes (used in CI)
+./scripts/dyff-wrapper.sh
+```
+
+## 📚 Related Repositories
+
+- `homelab-ansible` - K3s cluster provisioning
+- `homelab-terraform` - VM infrastructure
+- `homelab-packer` - Base image creation
