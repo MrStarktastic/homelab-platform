@@ -4,6 +4,7 @@ metadata:
   name: argocd-notifications-cm
   namespace: argocd
   labels:
+    app.kubernetes.io/name: argocd-notifications-cm
     app.kubernetes.io/part-of: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "1"
