@@ -166,3 +166,38 @@ yamllint .
 - `homelab-ansible` - K3s cluster provisioning
 - `homelab-terraform` - VM infrastructure
 - `homelab-packer` - Base image creation
+
+## 🌐 Network Configuration
+
+### IP Allocation
+
+| Service | IP Address | Purpose |
+|---------|------------|----------|
+| NFS Server | `10.9.8.30` | Persistent storage backend |
+| Traefik External | `10.9.8.90` | Public-facing ingress (LoadBalancer) |
+| Traefik Internal | `10.9.9.90` | Internal services ingress (LoadBalancer) |
+| qBittorrent | `10.9.8.91` | BitTorrent client (LoadBalancer) |
+
+### VLANs
+
+| VLAN | CIDR | Purpose |
+|------|------|----------|
+| MGMT | `10.9.9.0/24` | Management network |
+| Services | `10.9.8.0/24` | Service network |
+| Pods | `10.42.0.0/16` | Kubernetes pod network |
+
+### Domains
+
+| Domain | Purpose |
+|--------|----------|
+| `starktastic.net` | Primary external domain |
+| `*.internal.starktastic.net` | Internal services (behind Authentik) |
+| `benplus.vip` | Email/alternate domain |
+
+### Other Configuration
+
+| Setting | Value | Location |
+|---------|-------|----------|
+| Timezone | `Asia/Jerusalem` | `apps/templates/common.yaml` |
+| PUID/PGID | `1000/1000` | `apps/templates/common.yaml` |
+| Admin Email | `benfaingold@gmail.com` | ClusterIssuer, pgadmin |
