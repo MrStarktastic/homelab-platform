@@ -1,1 +1,4 @@
 .github/workflows/
+
+# Helm templates with Go templating syntax
+apps/templates/

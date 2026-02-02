@@ -7,10 +7,6 @@ controllers:
           PUID: "1000"
           PGID: "1000"
 
-# =============================================================================
-# Persistence Presets
-# =============================================================================
-# Default NFS config volume - can be overridden per-app
 persistence:
   config:
     enabled: true
@@ -22,33 +18,32 @@ persistence:
       - path: /config
 
 # =============================================================================
-# IngressRoute Presets (via rawResources)
+# IngressRoute Preset (via rawResources)
 # =============================================================================
-# Apps can enable these by setting:
+# Apps can enable these by setting in values.yaml:
 #   ingressPreset:
 #     enabled: true
 #     type: internal | public
 #     host: myapp.internal.starktastic.net
 #     service:
-#       name: myapp       # defaults to app name
+#       name: myapp       # defaults to release name
 #       port: 8080
-#     auth: true          # add authentik-middleware (default: true for internal)
-#
-# This generates a Traefik IngressRoute with standard middlewares.
+#     auth: true          # add authentik-middleware
+#     tls:
+#       secretName: ""    # leave empty for default, or specify cert secret
 # =============================================================================
 
-# Preset values (apps override these)
 ingressPreset:
   enabled: false
-  type: internal  # internal = websec-int, public = websecure
+  type: internal
   host: ""
   service:
     name: ""
     port: 80
-  auth: true  # whether to add authentik-middleware
+  auth: true
   rateLimitMiddleware: rate-limit-strong
   tls:
-    secretName: ""  # leave empty for cluster default cert, or specify e.g. "benplus-vip-tls"
+    secretName: ""
 
 rawResources:
   ingressroute:
