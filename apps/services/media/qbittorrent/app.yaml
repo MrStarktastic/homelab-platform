@@ -1,2 +1,3 @@
 name: qbittorrent
 namespace: media
+syncWave: "5"
