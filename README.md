@@ -121,44 +121,21 @@ The script will prompt you to enter key-value pairs interactively (press Ctrl+D 
    syncWave: "5"
    ```
 3. Add `values.yaml` (extends `templates/common.yaml`)
-4. Add `manifests/` folder (can contain `.gitkeep` if empty, or extra manifests)
+4. Add `manifests/` folder with IngressRoute and any extra manifests
 
-## 🧩 Presets
+## 🧩 Shared Defaults
 
-### IngressRoute Preset (Services only)
+### Common Values (templates/common.yaml)
 
-Services using `app-template` can generate Traefik IngressRoutes via the `ingressPreset` in `values.yaml`:
-
-```yaml
-ingressPreset:
-  enabled: true
-  type: internal      # internal = websec-int, public = websecure
-  host: myapp.internal.starktastic.net
-  service:
-    name: myapp       # defaults to release name
-    port: 8080
-  auth: true          # add authentik-middleware
-  tls:
-    secretName: ""    # leave empty for cluster default, or specify cert secret
-```
-
-**Preset types:**
-| Type | Entrypoint | Domain Pattern |
-|------|------------|----------------|
-| `internal` | `websec-int` | `*.internal.starktastic.net` |
-| `public` | `websecure` | `*.starktastic.net` or `*.benplus.vip` |
-
-**Options:**
-- `auth: true` - Adds `authentik-middleware` for SSO authentication
-- `tls.secretName` - Specify a TLS secret (e.g., `benplus-vip-tls` for Jellyfin)
-
-All IngressRoutes include `rate-limit-strong` middleware from `traefik-system`.
-
-### Persistence Presets
-
-Common values from `apps/templates/common.yaml` provide default persistence:
+All services using `app-template` inherit these defaults:
 
 ```yaml
+# Environment variables
+controllers.main.containers.main.env:
+  TZ: "Asia/Jerusalem"
+  PUID: "1000"
+  PGID: "1000"
+
 # Default NFS config volume (1Gi, /config)
 persistence:
   config:
