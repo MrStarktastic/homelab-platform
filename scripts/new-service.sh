@@ -20,7 +20,7 @@ echo ""
 
 # Prompt for service details
 read -p "Service name (e.g., radarr): " SERVICE_NAME
-if [[ -z "$SERVICE_NAME" ]]; then
+if [[ -z $SERVICE_NAME ]]; then
   echo -e "${RED}Error: Service name is required${NC}"
   exit 1
 fi
@@ -31,7 +31,7 @@ echo "Available categories:"
 CATEGORIES=()
 i=1
 for dir in "$REPO_ROOT/apps/services"/*/; do
-  if [[ -d "$dir" ]]; then
+  if [[ -d $dir ]]; then
     category=$(basename "$dir")
     CATEGORIES+=("$category")
     echo "  $i) $category"
@@ -42,13 +42,13 @@ echo "  $i) [NEW] Create new category"
 
 read -p "Select category [1-$i]: " CAT_CHOICE
 
-if [[ "$CAT_CHOICE" -eq "$i" ]]; then
+if [[ $CAT_CHOICE -eq $i ]]; then
   read -p "Enter new category name: " CATEGORY
   read -p "Enter namespace (default: $CATEGORY): " NAMESPACE
   NAMESPACE=${NAMESPACE:-$CATEGORY}
   echo -e "${YELLOW}Will create new category: $CATEGORY${NC}"
-elif [[ "$CAT_CHOICE" -ge 1 && "$CAT_CHOICE" -lt "$i" ]]; then
-  CATEGORY="${CATEGORIES[$((CAT_CHOICE-1))]}"
+elif [[ $CAT_CHOICE -ge 1 && $CAT_CHOICE -lt $i ]]; then
+  CATEGORY="${CATEGORIES[$((CAT_CHOICE - 1))]}"
   read -p "Enter namespace (default: $CATEGORY): " NAMESPACE
   NAMESPACE=${NAMESPACE:-$CATEGORY}
 else
@@ -65,27 +65,27 @@ echo -e "${YELLOW}Ingress Configuration${NC}"
 read -p "Enable ingress? [Y/n]: " INGRESS_ENABLED
 INGRESS_ENABLED=${INGRESS_ENABLED:-Y}
 
-if [[ "$INGRESS_ENABLED" =~ ^[Yy] ]]; then
+if [[ $INGRESS_ENABLED =~ ^[Yy] ]]; then
   read -p "Internal service? [Y/n]: " INTERNAL
   INTERNAL=${INTERNAL:-Y}
-  
+
   read -p "Require Authentik middleware? [Y/n]: " AUTH
   AUTH=${AUTH:-Y}
-  
+
   read -p "Enable rate limiting? [Y/n]: " RATELIMIT
   RATELIMIT=${RATELIMIT:-Y}
-  
+
   read -p "Custom subdomain (default: $SERVICE_NAME): " SUBDOMAIN
   SUBDOMAIN=${SUBDOMAIN:-$SERVICE_NAME}
-  
+
   INGRESS_BLOCK="
 ingress:
   enabled: true
   host: $SUBDOMAIN
-  internal: $( [[ "$INTERNAL" =~ ^[Yy] ]] && echo "true" || echo "false" )
+  internal: $([[ $INTERNAL =~ ^[Yy] ]] && echo "true" || echo "false")
   port: $PORT
-  auth: $( [[ "$AUTH" =~ ^[Yy] ]] && echo "true" || echo "false" )
-  rateLimit: $( [[ "$RATELIMIT" =~ ^[Yy] ]] && echo "true" || echo "false" )"
+  auth: $([[ $AUTH =~ ^[Yy] ]] && echo "true" || echo "false")
+  rateLimit: $([[ $RATELIMIT =~ ^[Yy] ]] && echo "true" || echo "false")"
 else
   INGRESS_BLOCK=""
 fi
@@ -96,10 +96,10 @@ echo -e "${YELLOW}Persistence Configuration${NC}"
 read -p "Need persistent storage? [Y/n]: " PERSISTENCE
 PERSISTENCE=${PERSISTENCE:-Y}
 
-if [[ "$PERSISTENCE" =~ ^[Yy] ]]; then
+if [[ $PERSISTENCE =~ ^[Yy] ]]; then
   read -p "Storage size (default: 5Gi): " STORAGE_SIZE
   STORAGE_SIZE=${STORAGE_SIZE:-5Gi}
-  
+
   PERSISTENCE_BLOCK="
 persistence:
   config:
@@ -126,14 +126,14 @@ SERVICE_DIR="$REPO_ROOT/apps/services/$CATEGORY/$SERVICE_NAME"
 mkdir -p "$SERVICE_DIR/manifests"
 
 # Generate app.yaml
-cat > "$SERVICE_DIR/app.yaml" << EOF
+cat >"$SERVICE_DIR/app.yaml" <<EOF
 name: $SERVICE_NAME
 namespace: $NAMESPACE
 syncWave: "5"$INGRESS_BLOCK
 EOF
 
 # Generate values.yaml
-cat > "$SERVICE_DIR/values.yaml" << EOF
+cat >"$SERVICE_DIR/values.yaml" <<EOF
 controllers:
   main:
     containers:
@@ -157,12 +157,12 @@ $PERSISTENCE_BLOCK
 EOF
 
 # Create empty manifests placeholder if no persistence
-if [[ ! "$PERSISTENCE" =~ ^[Yy] ]]; then
+if [[ ! $PERSISTENCE =~ ^[Yy] ]]; then
   touch "$SERVICE_DIR/manifests/.gitkeep"
 else
   # Extract PVC to manifests
-  if [[ -n "$PERSISTENCE_BLOCK" ]]; then
-    cat > "$SERVICE_DIR/manifests/pvc.yaml" << EOF
+  if [[ -n $PERSISTENCE_BLOCK ]]; then
+    cat >"$SERVICE_DIR/manifests/pvc.yaml" <<EOF
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -176,7 +176,7 @@ spec:
       storage: $STORAGE_SIZE
 EOF
     # Remove PVC from values.yaml (keep only persistence reference)
-    cat > "$SERVICE_DIR/values.yaml" << EOF
+    cat >"$SERVICE_DIR/values.yaml" <<EOF
 controllers:
   main:
     containers:
@@ -213,8 +213,8 @@ echo "  - $SERVICE_DIR/values.yaml"
 echo "  - $SERVICE_DIR/manifests/"
 echo ""
 
-if [[ "$INGRESS_ENABLED" =~ ^[Yy] ]]; then
-  if [[ "$INTERNAL" =~ ^[Yy] ]]; then
+if [[ $INGRESS_ENABLED =~ ^[Yy] ]]; then
+  if [[ $INTERNAL =~ ^[Yy] ]]; then
     echo -e "URL: ${BLUE}https://$SUBDOMAIN.internal.starktastic.net${NC}"
   else
     echo -e "URL: ${BLUE}https://$SUBDOMAIN.starktastic.net${NC}"
