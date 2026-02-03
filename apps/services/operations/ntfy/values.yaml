@@ -12,7 +12,7 @@ controllers:
         args: ["serve"]
 
         env:
-          NTFY_BASE_URL: "https://ntfy.starktastic.net"
+          NTFY_BASE_URL: "https://ntfy.{{ .Values.global.domains.public }}"
           NTFY_BEHIND_PROXY: "true"
           NTFY_UPSTREAM_BASE_URL: "https://ntfy.sh"
           NTFY_ENABLE_LOGIN: "true"
