@@ -5,6 +5,7 @@ auth:
 primary:
   persistence:
     enabled: true
+    storageClass: "nfs-pv"
     size: 8Gi
   initContainers:
     - name: rm-postmaster-lock-file
