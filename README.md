@@ -1,6 +1,6 @@
 # Homelab Platform
 
-[![ArgoCD](https://img.shields.io/badge/ArgoCD-Synced-48bb78?logo=argo)](https://argocd.internal.starktastic.net)
+![ArgoCD](https://img.shields.io/badge/ArgoCD-Synced-48bb78?logo=argo)
 [![Kubernetes](https://img.shields.io/badge/K3s-v1.35-326CE5?logo=kubernetes)](https://k3s.io)
 ![Traefik](https://img.shields.io/badge/Traefik-v3-24A1C1?logo=traefikproxy)
 ![Authentik](https://img.shields.io/badge/Authentik-SSO-FD4B2D?logo=authentik)
