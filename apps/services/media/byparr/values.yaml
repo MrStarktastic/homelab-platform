@@ -1,0 +1,34 @@
+controllers:
+  main:
+    containers:
+      main:
+        image:
+          repository: ghcr.io/thephaseless/byparr
+          tag: latest
+          digest: sha256:dd2ab939fd616c17da5f58d85f5264e5ad125de1db732f3f27a4b52e96b78cbb
+        probes:
+          liveness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8191
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8191
+          startup:
+            enabled: true
+            type: HTTP
+            path: /
+            port: 8191
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+
+service:
+  main:
+    controller: main
+    ports:
+      http:
+        port: 8191
