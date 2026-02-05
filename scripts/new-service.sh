@@ -189,18 +189,15 @@ controllers:
         probes:
           liveness:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: $PORT
           readiness:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: $PORT
           startup:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: $PORT
             spec:
               failureThreshold: 30
@@ -246,18 +243,15 @@ controllers:
         probes:
           liveness:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: $PORT
           readiness:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: $PORT
           startup:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: $PORT
             spec:
               failureThreshold: 30

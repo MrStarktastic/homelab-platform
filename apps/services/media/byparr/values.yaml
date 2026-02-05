@@ -9,18 +9,15 @@ controllers:
         probes:
           liveness:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: 8191
           readiness:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: 8191
           startup:
             enabled: true
-            type: HTTP
-            path: /
+            type: TCP
             port: 8191
             spec:
               failureThreshold: 30
