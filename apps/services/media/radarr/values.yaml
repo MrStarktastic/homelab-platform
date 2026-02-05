@@ -34,8 +34,6 @@ service:
         port: 7878
 
 persistence:
-  config:
-    existingClaim: radarr-config
   media:
     existingClaim: media-library-pvc
     globalMounts:

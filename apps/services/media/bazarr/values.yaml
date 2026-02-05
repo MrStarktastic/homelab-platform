@@ -34,8 +34,6 @@ service:
         port: 6767
 
 persistence:
-  config:
-    existingClaim: bazarr-config
   media:
     existingClaim: media-library-pvc
     globalMounts:

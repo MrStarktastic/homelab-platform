@@ -34,8 +34,6 @@ service:
         port: 8989
 
 persistence:
-  config:
-    existingClaim: sonarr-config
   media:
     existingClaim: media-library-pvc
     globalMounts:
