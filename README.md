@@ -1,120 +1,197 @@
 # Homelab Platform
 
-GitOps repository for managing a Kubernetes homelab using ArgoCD with an App-of-Apps pattern.
+[![ArgoCD](https://img.shields.io/badge/ArgoCD-Synced-48bb78?logo=argo)](https://argocd.internal.starktastic.net)
+[![Kubernetes](https://img.shields.io/badge/K3s-v1.35-326CE5?logo=kubernetes)](https://k3s.io)
+![Traefik](https://img.shields.io/badge/Traefik-v3-24A1C1?logo=traefikproxy)
+![Authentik](https://img.shields.io/badge/Authentik-SSO-FD4B2D?logo=authentik)
 
-## 🏗️ Architecture
+GitOps repository for managing a Kubernetes homelab using ArgoCD with an App-of-Apps pattern. All cluster applications are defined declaratively and automatically synced from this repository.
 
+## Overview
+
+This repository contains the complete application layer for the homelab Kubernetes cluster. It is bootstrapped by [homelab-ansible](https://github.com/starktastic/homelab-ansible) and uses ArgoCD for continuous deployment.
+
+```mermaid
+flowchart TB
+    subgraph Bootstrap["ArgoCD Bootstrap"]
+        ClusterBootstrap[cluster-bootstrap] --> Foundation
+        ClusterBootstrap --> InfraConfigs
+        ClusterBootstrap --> AppSet
+    end
+    
+    subgraph Apps["Applications"]
+        Foundation[foundation<br/>wave: -10] --> Namespaces[Namespaces]
+        AppSet[platform AppSet<br/>wave: 0-5] --> Controllers
+        AppSet --> Services
+        InfraConfigs[infra-configs<br/>wave: 1] --> Ingresses
+        
+        subgraph Controllers["Infrastructure"]
+            Traefik[Traefik]
+            Authentik[Authentik]
+            PostgreSQL[PostgreSQL]
+            Redis[Redis]
+        end
+        
+        subgraph Services["Services"]
+            Media[Media Apps]
+            Operations[Operations]
+        end
+        
+        subgraph Ingresses["Configs"]
+            Routes[IngressRoutes]
+            Certs[Certificates]
+            MW[Middlewares]
+        end
+    end
+    
+    style Bootstrap fill:#2d3748,stroke:#805ad5
+    style Apps fill:#2d3748,stroke:#48bb78
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Bootstrap                                │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
-│  │  foundation  │  │ infra-configs│  │     ApplicationSet     │ │
-│  │  (wave -10)  │  │   (wave 1)   │  │     platform.yaml      │ │
-│  └──────┬───────┘  └──────┬───────┘  └──────────┬─────────────┘ │
-└─────────┼─────────────────┼─────────────────────┼───────────────┘
-          │                 │                     │
-          ▼                 ▼                     ▼
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────┐
-│   Foundation    │  │     Configs     │  │      Controllers        │
-│                 │  │                 │  │                         │
-│  • Namespaces   │  │  • Ingresses    │  │  • Helm Charts          │
-│  • RBAC         │  │  • Certs        │  │  • Values + Manifests   │
-│                 │  │  • Middlewares  │  │                         │
-└─────────────────┘  └─────────────────┘  └─────────────────────────┘
+
+## Features
+
+- 🔄 **GitOps with ArgoCD** - Declarative app definitions, auto-sync, self-healing
+- 📦 **App-of-Apps Pattern** - Unified ApplicationSet for all workloads
+- 🔐 **Authentik SSO** - OIDC authentication with ForwardAuth middleware
+- 🌐 **Traefik Ingress** - Dynamic IngressRoute generation
+- 🔑 **Sealed Secrets** - Encrypted secrets stored in Git
+- 🎮 **Intel GPU Support** - SR-IOV passthrough for transcoding
+- 💾 **NFS Storage** - Dynamic provisioning with `nfs-pv` StorageClass
+- 🔄 **Renovate Managed** - Automated Helm chart updates
+
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph External["External Traffic"]
+        Public["*.starktastic.net<br/>10.9.8.90"]
+        Media["*.benplus.vip<br/>10.9.8.90"]
+    end
+    
+    subgraph Internal["Internal Traffic"]
+        Int["*.internal.starktastic.net<br/>10.9.9.90"]
+    end
+    
+    subgraph Cluster["K3s Cluster"]
+        Traefik[Traefik]
+        Authentik[Authentik<br/>ForwardAuth]
+        Apps[Applications]
+    end
+    
+    Public --> Traefik
+    Media --> Traefik
+    Int --> Traefik
+    Traefik --> Authentik
+    Authentik --> Apps
+    Traefik --> Apps
+    
+    style External fill:#e53e3e,stroke:#c53030
+    style Internal fill:#4299e1,stroke:#2b6cb0
+    style Cluster fill:#2d3748,stroke:#48bb78
 ```
 
-## 📁 Directory Structure
+## Repository Structure
 
 ```
 apps/
-├── bootstrap/              # Entry point - deploy these first
-│   ├── foundation.yaml     # Creates namespaces (sync-wave: -10)
-│   ├── infra-configs.yaml  # Deploys configs after controllers (sync-wave: 1)
+├── bootstrap/                  # Entry point - deploy these first
+│   ├── foundation.yaml         # Creates namespaces (sync-wave: -10)
+│   ├── infra-configs.yaml      # Deploys configs after controllers (wave: 1)
 │   └── appsets/
-│       └── platform.yaml   # Unified ApplicationSet for infra + services
+│       └── platform.yaml       # Unified ApplicationSet
 │
-├── foundation/             # Namespace definitions
+├── foundation/                 # Namespace definitions
 │   └── namespaces/
+│       ├── authentik.yaml
+│       ├── cert-manager.yaml
+│       └── ...
 │
 ├── infrastructure/
-│   ├── configs/            # Non-Helm resources (ingresses, certs, etc.)
-│   ├── controllers/        # Helm-based apps (each has app.yaml + values.yaml)
-│   │   ├── authentik/
-│   │   ├── databases/
-│   │   └── traefik/
-│   └── system/             # Cluster-level components
+│   ├── configs/                # Non-Helm resources
+│   │   └── ingresses/          # IngressRoutes, certs, middlewares
+│   ├── controllers/            # Helm-based infrastructure
+│   │   ├── authentik/          # Identity provider
+│   │   ├── databases/          # PostgreSQL + Redis
+│   │   └── traefik/            # Ingress controller
+│   └── system/                 # Cluster components
 │       ├── cert-manager/
 │       ├── intel-gpu/
 │       ├── nfs-provisioner/
 │       └── sealed-secrets/
 │
-├── services/               # User-facing applications
-│   ├── media/              # Prowlarr, qBittorrent, Jellyfin, etc.
-│   └── operations/         # ntfy, monitoring, etc.
+├── services/                   # User-facing applications
+│   ├── media/                  # qBittorrent, Prowlarr
+│   └── operations/             # ntfy
 │
 ├── templates/
-│   ├── common.yaml         # Shared Helm values for services (app-template)
-│   ├── infra-common.yaml   # Shared Helm values for infrastructure
-│   └── ingress-chart/      # Dynamic IngressRoute generator
+│   ├── common.yaml             # Shared values for services
+│   ├── infra-common.yaml       # Shared values for infrastructure
+│   └── ingress-chart/          # Dynamic IngressRoute generator
 │
-└── scripts/                # Utility scripts
-    ├── new-service.sh      # Scaffold a new service
-    ├── seal.sh             # Seal secrets with kubeseal
-    └── dyff-wrapper.sh     # YAML diff for CI
+└── scripts/
+    ├── new-service.sh          # Scaffold a new service
+    ├── seal.sh                 # Seal secrets with kubeseal
+    └── dyff-wrapper.sh         # YAML diff for CI
 ```
 
-## 🚀 Bootstrap Order
+## Bootstrap Order
 
-The deployment follows a strict ordering via ArgoCD sync-waves:
+Deployment follows strict sync-wave ordering:
+
+```mermaid
+flowchart LR
+    W10["Wave -10<br/>Namespaces"] --> W1["Wave -1<br/>GPU Plugin"]
+    W1 --> W0["Wave 0<br/>Controllers"]
+    W0 --> W1b["Wave 1<br/>Configs"]
+    W1b --> W5["Wave 5+<br/>Services"]
+    
+    style W10 fill:#805ad5
+    style W1 fill:#4299e1
+    style W0 fill:#48bb78
+    style W1b fill:#ed8936
+    style W5 fill:#e53e3e
+```
 
 | Wave | Component | Description |
 |------|-----------|-------------|
 | -10 | `foundation` | Namespaces and basic RBAC |
-| 0 | `platform` ApplicationSet (infrastructure) | Infrastructure controllers (Traefik, DBs, Auth) |
+| -1 | `intel-gpu-plugin` | GPU device plugin (before workloads) |
+| 0 | Infrastructure controllers | Traefik, Authentik, PostgreSQL, Redis |
 | 1 | `infra-configs` | Ingress routes, certificates, middlewares |
-| 2+ | `platform` ApplicationSet (services) | User applications |
+| 5+ | Services | User applications |
 
-## 🔐 Secret Management
+## Infrastructure Components
 
-This repository uses [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets) for encrypting secrets in Git.
+### Controllers
 
-### Sealing a Secret
+| Component | Chart Version | Description |
+|-----------|--------------|-------------|
+| Traefik | v39.0.0 | Ingress controller with dual entrypoints |
+| Authentik | v2025.12.3 | Identity provider with OIDC SSO |
+| PostgreSQL | v18.2.4 | Database for Authentik and apps |
+| Redis | v24.1.3 | Cache for Authentik |
 
-```bash
-# Namespace-scoped (strict) - default
-./scripts/seal.sh <secret-name> <namespace>
+### System
 
-# Cluster-wide scope
-./scripts/seal.sh <secret-name> <namespace> --cluster-wide
-```
+| Component | Description |
+|-----------|-------------|
+| cert-manager | TLS certificate automation |
+| intel-device-operator | Intel GPU device management |
+| intel-gpu-plugin | Exposes GPU resources to pods |
+| nfs-provisioner | Dynamic NFS volume provisioning |
+| sealed-secrets | Encrypted secrets in Git |
 
-The script will prompt you to enter key-value pairs interactively (press Ctrl+D when done).
+## Domain Configuration
 
-## 📦 Adding a New Application
+| Domain | Purpose | LoadBalancer IP | Entrypoint |
+|--------|---------|-----------------|------------|
+| `*.starktastic.net` | Public services | `10.9.8.90` | `websecure` |
+| `*.internal.starktastic.net` | Internal services | `10.9.9.90` | `websec-int` |
+| `*.benplus.vip` | Media services | `10.9.8.90` | `websecure` |
 
-### Infrastructure Controller (Helm-based)
+## Usage
 
-1. Create directory: `apps/infrastructure/controllers/<name>/`
-2. Add `app.yaml`:
-   ```yaml
-   name: my-app
-   namespace: my-namespace
-   syncWave: "0"
-   chart:
-     repo: https://charts.example.com
-     name: my-chart
-     version: 1.0.0
-   # Optional: ignore auto-generated fields
-   ignoreDifferences:
-     - group: ""
-       kind: Secret
-       jsonPointers:
-         - /data/password
-   ```
-3. Add `values.yaml` with Helm values
-4. Add `manifests/` folder (can contain `.gitkeep` if empty, or extra manifests)
-
-### Service (using app-template)
+### Adding a New Service
 
 1. Create directory: `apps/services/<category>/<name>/`
 2. Add `app.yaml`:
@@ -125,25 +202,33 @@ The script will prompt you to enter key-value pairs interactively (press Ctrl+D 
    
    ingress:
      enabled: true
-     host: my-service          # Subdomain (or empty for root domain)
+     host: my-service          # Subdomain
      domainType: "internal"    # public | internal | media
      port: 8080
-     auth: true                # Authentik ForwardAuth middleware
-     rateLimit: true           # Rate limiting middleware
+     auth: true                # Authentik ForwardAuth
+     rateLimit: true           # Rate limiting
    ```
 3. Add `values.yaml` (extends `templates/common.yaml`)
-4. Add `manifests/` folder for PVCs and any extra manifests
+4. Add `manifests/` folder for PVCs and extra resources
 
 Or use the scaffolding script:
 ```bash
 ./scripts/new-service.sh
 ```
 
-## 🧩 Shared Defaults
+### Sealing Secrets
 
-### Common Values (templates/common.yaml)
+```bash
+# Namespace-scoped (default)
+./scripts/seal.sh <secret-name> <namespace>
 
-All services using `app-template` inherit these defaults:
+# Cluster-wide scope
+./scripts/seal.sh <secret-name> <namespace> --cluster-wide
+```
+
+### Shared Defaults
+
+All services inherit from `templates/common.yaml`:
 
 ```yaml
 global:
@@ -152,7 +237,6 @@ global:
     public: "starktastic.net"
     internal: "internal.starktastic.net"
     media: "benplus.vip"
-  defaultTlsSecret: "starktastic-net-tls"
 
 controllers:
   main:
@@ -166,130 +250,13 @@ controllers:
 persistence:
   config:
     enabled: true
-    type: persistentVolumeClaim
     storageClass: "nfs-pv"
     size: 1Gi
-    accessMode: ReadWriteMany
-    globalMounts:
-      - path: /config
 ```
 
-Apps can override or extend with additional volumes in their `values.yaml`.
+## GPU Support
 
-### Ingress Chart (templates/ingress-chart/)
-
-The ingress-chart automatically generates Traefik IngressRoutes based on `app.yaml` configuration:
-
-| Field | Default | Description |
-|-------|---------|-------------|
-| `host` | (required) | Subdomain, or empty for root domain |
-| `domainType` | `internal` | `public`, `internal`, or `media` |
-| `port` | `80` | Service port |
-| `auth` | `false` | Enable Authentik ForwardAuth middleware |
-| `rateLimit` | `false` | Enable rate limiting middleware |
-| `serviceName` | `<name>` | Override the target service name |
-
-#### Domain Types
-
-| Type | Domain | Entrypoint | LoadBalancer IP |
-|------|--------|------------|-----------------|
-| `public` | `*.starktastic.net` | `websecure` | `10.9.8.90` |
-| `internal` | `*.internal.starktastic.net` | `websec-int` | `10.9.9.90` |
-| `media` | `*.benplus.vip` | `websecure` | `10.9.8.90` |
-
-## 🔧 Configuration
-
-### ApplicationSet Features
-
-- **Auto-sync**: Changes in Git are automatically applied
-- **Self-heal**: Drift from Git state is corrected
-- **Server-Side Apply**: Reduces conflicts with controllers
-- **Pruning**: Removed resources are deleted
-
-### ignoreDifferences
-
-For apps that generate secrets or have controller-managed fields, add to `app.yaml`:
-
-```yaml
-ignoreDifferences:
-  - group: ""
-    kind: Secret
-    jsonPointers:
-      - /data/password
-```
-
-## 🛠️ Development
-
-### Prerequisites
-
-- ArgoCD installed with access to this repository
-- `kubeseal` CLI for secret management
-- `kubectl` configured for your cluster
-
-### Validating Changes
-
-```bash
-# Lint YAML files
-yamllint .
-
-# Diff changes (used in CI)
-./scripts/dyff-wrapper.sh
-```
-
-## 📚 Related Repositories
-
-- `homelab-ansible` - K3s cluster provisioning
-- `homelab-terraform` - VM infrastructure
-- `homelab-packer` - Base image creation
-
-## 🌐 Network Configuration
-
-### IP Allocation
-
-| Service | IP Address | Purpose |
-|---------|------------|----------|
-| NFS Server | `10.9.8.30` | Persistent storage backend |
-| Traefik External | `10.9.8.90` | Public-facing ingress (LoadBalancer) |
-| Traefik Internal | `10.9.9.90` | Internal services ingress (LoadBalancer) |
-| qBittorrent | `10.9.8.91` | BitTorrent client (LoadBalancer) |
-
-### VLANs
-
-| VLAN | CIDR | Purpose |
-|------|------|----------|
-| MGMT | `10.9.9.0/24` | Management network |
-| Services | `10.9.8.0/24` | Service network |
-| Pods | `10.42.0.0/16` | Kubernetes pod network |
-
-### Domains
-
-| Domain | Purpose | LoadBalancer IP |
-|--------|----------|-----------------|
-| `*.starktastic.net` | Public external services | `10.9.8.90` |
-| `*.internal.starktastic.net` | Internal services (behind Authentik) | `10.9.9.90` |
-| `*.benplus.vip` | Media services (Jellyfin, Jellyseerr) | `10.9.8.90` |
-
-### Other Configuration
-
-| Setting | Value | Location |
-|---------|-------|----------|
-| Timezone | `Asia/Jerusalem` | `apps/templates/common.yaml` |
-| PUID/PGID | `1000/1000` | `apps/templates/common.yaml` |
-| Storage Class | `nfs-pv` | `apps/templates/common.yaml`, `apps/templates/infra-common.yaml` |
-| Admin Email | `benfaingold@gmail.com` | ClusterIssuer, pgadmin |
-
-## 🎮 GPU Support
-
-Intel GPU passthrough is enabled for hardware transcoding:
-
-### Components
-
-- **intel-device-operator** (`apps/infrastructure/system/intel-device-operator/`) - Manages Intel device plugins
-- **intel-gpu-plugin** (`apps/infrastructure/system/intel-gpu/`) - Exposes GPU resources to pods
-
-### Usage
-
-To use GPU in a service, add resource requests:
+Intel GPU passthrough for hardware transcoding:
 
 ```yaml
 controllers:
@@ -303,57 +270,63 @@ controllers:
             gpu.intel.com/i915: "1"
 ```
 
-Worker nodes with Intel GPUs are labeled automatically by the device operator.
+## Network Configuration
 
-## 📼 Media Storage
+| Service | IP Address | Purpose |
+|---------|------------|---------|
+| NFS Server | `10.9.8.30` | Persistent storage |
+| Traefik External | `10.9.8.90` | Public ingress |
+| Traefik Internal | `10.9.9.90` | Internal ingress |
+| qBittorrent | `10.9.8.91` | BitTorrent client |
 
-### Static Media Volume
+### VLANs
 
-A dedicated 10Ti PV is provisioned for media storage:
+| VLAN | CIDR | Purpose |
+|------|------|---------|
+| Management | `10.9.9.0/24` | Cluster management |
+| Services | `10.9.8.0/24` | Service network |
+| Pods | `10.42.0.0/16` | Kubernetes pods |
 
-| Resource | Details |
-|----------|---------|
-| NFS Server | `10.9.8.30:/mnt/main/media` |
-| PV Name | `media-storage` |
-| PVC | `media-pvc` (namespace: `media`) |
-| Access Mode | `ReadWriteMany` |
+## Pipeline Integration
 
-### Mounting in Services
-
-```yaml
-persistence:
-  media:
-    existingClaim: media-pvc
-    globalMounts:
-      - path: /media
+```mermaid
+flowchart TD
+    subgraph Pipeline["Homelab Pipeline"]
+        direction TB
+        Packer["📦 Packer<br/>VM Template"]
+        Terraform["🏗️ Terraform<br/>VM Provisioning"]
+        Ansible["⚙️ Ansible<br/>K3s Cluster"]
+        Platform["🚀 Platform<br/>GitOps Apps"]
+    end
+    
+    Packer -->|manifest.json| Terraform
+    Terraform -->|dispatch| Ansible
+    Ansible -->|bootstrap| Platform
+    
+    style Packer fill:#4299e1,stroke:#2b6cb0
+    style Terraform fill:#805ad5,stroke:#553c9a
+    style Ansible fill:#48bb78,stroke:#276749
+    style Platform fill:#ed8936,stroke:#c05621
 ```
 
-### Dynamic Storage (nfs-pv)
+## Troubleshooting
 
-For application configs and caches, use the `nfs-pv` StorageClass which dynamically provisions NFS volumes.
+| Issue | Solution |
+|-------|----------|
+| PostgreSQL postmaster.pid lock | Init container auto-removes stale locks |
+| Sealed secrets decryption error | Verify secret was sealed for correct namespace |
+| Sync wave ordering failure | Check namespaces exist (wave -10) before controllers |
+| PVC stuck in Pending | Verify NFS server `10.9.8.30` is accessible |
+| GPU not available | Check intel-gpu-plugin pods are running |
 
-## 🔧 Troubleshooting
+## Related Repositories
 
-### PostgreSQL postmaster.pid Lock
+| Repository | Description |
+|------------|-------------|
+| [homelab-packer](https://github.com/starktastic/homelab-packer) | Builds VM templates |
+| [homelab-terraform](https://github.com/starktastic/homelab-terraform) | Provisions VMs on Proxmox |
+| [homelab-ansible](https://github.com/starktastic/homelab-ansible) | K3s cluster configuration |
 
-If PostgreSQL fails to start with "postmaster.pid already exists", the init container in `postgres/values.yaml` automatically removes stale lock files. This can happen after ungraceful NFS disconnections.
+## License
 
-### Sealed Secrets Scope
-
-Sealed secrets are namespace-scoped by default. If you get decryption errors:
-1. Ensure the secret was sealed for the correct namespace
-2. Use `--cluster-wide` flag if the secret needs to be used across namespaces
-
-### ArgoCD Sync Wave Ordering
-
-If resources fail to sync due to missing dependencies:
-1. Check sync-wave annotations match the expected order
-2. Ensure namespaces are created in foundation (wave -10)
-3. Verify controllers are deployed before configs (wave 0 before wave 1)
-
-### NFS Connectivity
-
-If PVCs are stuck in Pending:
-1. Verify NFS server (`10.9.8.30`) is accessible from nodes
-2. Check `nfs-provisioner` pods are running
-3. Verify StorageClass `nfs-pv` exists
+MIT
