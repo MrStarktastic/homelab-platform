@@ -10,7 +10,7 @@ data:
       dry_run: false
       recheck: true
       cat_update: true
-      tag_update: false
+      tag_update: true
       rem_unregistered: true
       tag_tracker_error: true
       rem_orphaned: true
@@ -42,7 +42,29 @@ data:
       movies: "/data/torrents/movies"
       tv: "/data/torrents/tv"
 
-    tracker: {}
+    tracker:
+      Aither:
+        tag: Aither
+      AlphaRatio:
+        tag: AlphaRatio
+      AnimeTorrents:
+        tag: AnimeTorrents
+      Anthelion:
+        tag: Anthelion
+      filelist:
+        tag: FileList
+      hawke-uno|hawke.uno:
+        tag: hawke-uno
+      hebits:
+        tag: Hebits
+      iptorrents:
+        tag: IPTorrents
+      lst.gg:
+        tag: LST
+      privatehd:
+        tag: PrivateHD
+      other:
+        tag: other
 
     nohardlinks:
       movies:

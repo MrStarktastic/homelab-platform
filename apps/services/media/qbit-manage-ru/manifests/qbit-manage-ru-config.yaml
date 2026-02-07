@@ -10,7 +10,7 @@ data:
       dry_run: false
       recheck: true
       cat_update: true
-      tag_update: false
+      tag_update: true
       rem_unregistered: true
       tag_tracker_error: true
       rem_orphaned: true
