@@ -42,6 +42,13 @@ data:
               - name: Remux-1080p - Anime
 
           - trash_ids:
+              - e6886871085226c3da1830830146846c # Generated Dynamic HDR
+              - 712d74cd88bceb883ee32f773656b1f5 # Sing-Along Versions
+            assign_scores_to:
+              - name: Remux + WEB 2160p
+              - name: Remux-1080p - Anime
+
+          - trash_ids:
               - 0f12c086e289cf966fa5948eac571f44 # Hybrid
               - 570bc9ebecd92723d2d21500f4be314c # Remaster
               - eca37840c13c6ef2dd0262b141a5482f # 4K Remaster
