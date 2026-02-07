@@ -40,7 +40,9 @@
       "description": "Update pinned tool versions in CI workflows",
       "customType": "regex",
       "fileMatch": ["^\\.github/workflows/.*\\.yml$"],
-      "matchStrings": ["# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+\\w+:\\s*'(?<currentValue>[^']+)'"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+\\w+:\\s*'(?<currentValue>[^']+)'"
+      ],
       "datasourceTemplate": "{{datasource}}"
     }
   ]
