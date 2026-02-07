@@ -25,6 +25,8 @@ service:
 
 persistence:
   config:
+    enabled: false
+  qbit-config:
     type: configMap
     name: qbit-manage-config
     globalMounts:
