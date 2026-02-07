@@ -19,7 +19,7 @@ data:
           folder: default
           movie:
             rename: true
-            standard: default
+            standard: standard
 
         include:
           # Quality sizes (only needed once per instance)
@@ -144,7 +144,7 @@ data:
           folder: default
           movie:
             rename: true
-            standard: default
+            standard: standard
 
         include:
           # Quality sizes
