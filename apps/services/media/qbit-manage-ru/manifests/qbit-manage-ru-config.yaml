@@ -42,7 +42,15 @@ data:
       movies-ru: "/data/torrents/movies-ru"
       tv-ru: "/data/torrents/tv-ru"
 
-    tracker: {}
+    tracker:
+      kinozal:
+        tag: Kinozal
+      nnmclub|nnm-club:
+        tag: NoNaMe Club
+      rutracker:
+        tag: RuTracker
+      other:
+        tag: other
 
     nohardlinks:
       movies-ru:
