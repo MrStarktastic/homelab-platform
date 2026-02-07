@@ -23,8 +23,35 @@ data:
           - template: radarr-quality-profile-remux-web-2160p
           - template: radarr-custom-formats-remux-web-2160p
 
+        custom_formats:
+          - trash_ids:
+              - b337d6812e06c200ec9a2d3cfa9d20a7 # DV Boost
+              - caa37d0df9c348912df1fb1d88f9273a # HDR10+ Boost
+            assign_scores_to:
+              - name: Remux + WEB 2160p
+
+          - trash_ids:
+              - 496f355514737f7d83bf7aa4d24f8169 # TrueHD ATMOS
+              - 2f22d89048b01681dde8afe203bf2e95 # DTS X
+              - 3cafb66171b47f226146a0770576870f # TrueHD
+              - dcf3ec6938fa32445f590a4da84256cd # DTS-HD MA
+              - a570d4a0e56a2874b64e5bfa55202a1b # FLAC
+            assign_scores_to:
+              - name: Remux + WEB 2160p
+
         quality_profiles:
           - name: Remux + WEB 2160p
+            qualities:
+              - name: Remux-2160p
+              - name: WEB 2160p
+                qualities:
+                  - WEBDL-2160p
+                  - WEBRip-2160p
+              - name: Remux-1080p
+              - name: WEB 1080p
+                qualities:
+                  - WEBDL-1080p
+                  - WEBRip-1080p
             reset_unmatched_scores:
               enabled: true
 
@@ -58,12 +85,48 @@ data:
           # Quality sizes (only needed once per instance)
           - template: sonarr-quality-definition-series
 
-          # WEB-1080p
-          - template: sonarr-v4-quality-profile-web-1080p
-          - template: sonarr-v4-custom-formats-web-1080p
+          # WEB-2160p with 1080p fallback
+          - template: sonarr-v4-quality-profile-web-2160p-alternative
+          - template: sonarr-v4-custom-formats-web-2160p
+
+        custom_formats:
+          - trash_ids:
+              - 7c3a61a9c6cb04f52f1544be6d44a026 # DV Boost
+              - 0c4b99df9206d2cfac3c05ab897dd62a # HDR10+ Boost
+            assign_scores_to:
+              - name: WEB-2160p
+
+          - trash_ids:
+              - 0d7824bb924701997f874e7ff7d4844a # TrueHD ATMOS
+              - 9d00418ba386a083fbf4d58235fc37ef # DTS X
+              - 1808e4b9cee74e064dfae3f1db99dbfe # TrueHD
+              - c429417a57ea8c41d57e6990a8b0033f # DTS-HD MA
+              - 851bd64e04c9374c51102be3dd9ae4cc # FLAC
+            assign_scores_to:
+              - name: WEB-2160p
 
         quality_profiles:
-          - name: WEB-1080p
+          - name: WEB-2160p
+            qualities:
+              - name: Remux-2160p
+              - name: WEB 2160p
+                qualities:
+                  - WEBDL-2160p
+                  - WEBRip-2160p
+              - name: Remux-1080p
+              - name: WEB 1080p
+                qualities:
+                  - WEBDL-1080p
+                  - WEBRip-1080p
+              - name: Bluray-2160p
+              - name: Bluray-1080p
+              - name: HDTV-1080p
+              - name: WEB 720p
+                qualities:
+                  - WEBDL-720p
+                  - WEBRip-720p
+              - name: Bluray-720p
+              - name: HDTV-720p
             reset_unmatched_scores:
               enabled: true
 
