@@ -1,5 +1,14 @@
 controllers:
   main:
+    initContainers:
+      copy-config:
+        image:
+          repository: busybox
+          tag: stable
+        command:
+          - sh
+          - -c
+          - cp /config-source/config.yml /config/config.yml
     containers:
       main:
         image:
@@ -33,10 +42,12 @@ persistence:
   qbit-config:
     type: configMap
     name: qbit-manage-config
-    globalMounts:
-      - path: /config/config.yml
-        subPath: config.yml
-        readOnly: true
+    advancedMounts:
+      main:
+        copy-config:
+          - path: /config-source/config.yml
+            subPath: config.yml
+            readOnly: true
   media:
     existingClaim: media-library-pvc
     globalMounts:
