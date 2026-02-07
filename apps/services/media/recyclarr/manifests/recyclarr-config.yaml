@@ -214,9 +214,7 @@ data:
 
           - name: Remux-1080p - Anime
             qualities:
-              - name: Remux-2160p
-                qualities:
-                  - Bluray-2160p Remux
+              - name: Bluray-2160p Remux
               - name: WEB 2160p
                 qualities:
                   - WEBDL-2160p
