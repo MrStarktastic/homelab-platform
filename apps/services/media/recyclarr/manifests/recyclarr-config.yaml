@@ -1,0 +1,266 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recyclarr-config
+  namespace: media
+data:
+  recyclarr.yml: |
+    # yaml-language-server: $schema=https://raw.githubusercontent.com/recyclarr/recyclarr/master/schemas/config-schema.json
+
+    radarr:
+      radarr_main:
+        base_url: http://radarr.media.svc.cluster.local:7878
+        api_key: !env_var RADARR_API_KEY
+        delete_old_custom_formats: true
+        replace_existing_custom_formats: true
+
+        include:
+          # Quality sizes (only needed once per instance)
+          - template: radarr-quality-definition-movie
+
+          # Remux + WEB 2160p (max quality - 4K Remux)
+          - template: radarr-quality-profile-remux-web-2160p
+          - template: radarr-custom-formats-remux-web-2160p
+
+          # Anime
+          - template: radarr-quality-profile-anime
+          - template: radarr-custom-formats-anime
+
+        custom_formats:
+          - trash_ids:
+              - b337d6812e06c200ec9a2d3cfa9d20a7 # DV Boost
+              - caa37d0df9c348912df1fb1d88f9273a # HDR10+ Boost
+            assign_scores_to:
+              - name: Remux + WEB 2160p
+              - name: Remux-1080p - Anime
+
+          - trash_ids:
+              - 923b6abef9b17f937fab56cfcf89e1f1 # DV (w/o HDR fallback)
+            assign_scores_to:
+              - name: Remux + WEB 2160p
+                score: -10000
+              - name: Remux-1080p - Anime
+                score: -10000
+
+          - trash_ids:
+              - 496f355514737f7d83bf7aa4d24f8169 # TrueHD ATMOS
+              - 2f22d89048b01681dde8afe203bf2e95 # DTS X
+              - 417804f7f2c4308c1f4c5d380d4c4475 # ATMOS (undefined)
+              - 1af239278386be2919e1bcee0bde047e # DD+ ATMOS
+              - 3cafb66171b47f226146a0770576870f # TrueHD
+              - dcf3ec6938fa32445f590a4da84256cd # DTS-HD MA
+              - a570d4a0e56a2874b64e5bfa55202a1b # FLAC
+              - e7c2fcae07cbada050a0af3357491d7b # PCM
+              - 8e109e50e0a0b83a5098b056e13bf6db # DTS-HD HRA
+              - 185f1dd7264c4562b9022d963ac37424 # DD+
+              - f9f847ac70a0af62ea4a08280b859636 # DTS-ES
+              - 1c1a4c5e823891c75bc50380a6866f73 # DTS
+              - 240770601cc226190c367ef59aba7463 # AAC
+              - c2998bd0d90ed5621d8df281e839436e # DD
+              - 6ba9033150e7896bdc9ec4b44f2b230f # MP3
+              - a061e2e700f81932daf888599f8a8273 # Opus
+            assign_scores_to:
+              - name: Remux + WEB 2160p
+              - name: Remux-1080p - Anime
+
+        quality_profiles:
+          - name: Remux + WEB 2160p
+            qualities:
+              - name: Remux-2160p
+              - name: WEB 2160p
+                qualities:
+                  - WEBDL-2160p
+                  - WEBRip-2160p
+              - name: Remux-1080p
+              - name: WEB 1080p
+                qualities:
+                  - WEBDL-1080p
+                  - WEBRip-1080p
+            reset_unmatched_scores:
+              enabled: true
+
+          - name: Remux-1080p - Anime
+            qualities:
+              - name: Remux-2160p
+              - name: WEB 2160p
+                qualities:
+                  - WEBDL-2160p
+                  - WEBRip-2160p
+              - name: Remux-1080p
+                qualities:
+                  - Bluray-1080p
+                  - Remux-1080p
+              - name: WEB 1080p
+                qualities:
+                  - WEBDL-1080p
+                  - WEBRip-1080p
+                  - HDTV-1080p
+              - name: Bluray-720p
+              - name: WEB 720p
+                qualities:
+                  - WEBDL-720p
+                  - WEBRip-720p
+                  - HDTV-720p
+              - name: Bluray-480p
+              - name: WEB 480p
+                qualities:
+                  - WEBDL-480p
+                  - WEBRip-480p
+              - name: DVD
+              - name: SDTV
+            reset_unmatched_scores:
+              enabled: true
+
+      radarr_ru:
+        base_url: http://radarr-ru.media.svc.cluster.local:7878
+        api_key: !env_var RADARR_RU_API_KEY
+        delete_old_custom_formats: true
+        replace_existing_custom_formats: true
+
+        include:
+          # Quality sizes
+          - template: radarr-quality-definition-movie
+
+          # HD Bluray + WEB (capped at 1080p)
+          - template: radarr-quality-profile-hd-bluray-web
+          - template: radarr-custom-formats-hd-bluray-web
+
+        quality_profiles:
+          - name: HD Bluray + WEB
+            reset_unmatched_scores:
+              enabled: true
+
+    sonarr:
+      sonarr_main:
+        base_url: http://sonarr.media.svc.cluster.local:8989
+        api_key: !env_var SONARR_API_KEY
+        delete_old_custom_formats: true
+        replace_existing_custom_formats: true
+
+        include:
+          # Quality sizes (only needed once per instance)
+          - template: sonarr-quality-definition-series
+
+          # WEB-2160p with 1080p fallback
+          - template: sonarr-v4-quality-profile-web-2160p-alternative
+          - template: sonarr-v4-custom-formats-web-2160p
+
+          # Anime
+          - template: sonarr-v4-quality-profile-anime
+          - template: sonarr-v4-custom-formats-anime
+
+        custom_formats:
+          - trash_ids:
+              - 7c3a61a9c6cb04f52f1544be6d44a026 # DV Boost
+              - 0c4b99df9206d2cfac3c05ab897dd62a # HDR10+ Boost
+            assign_scores_to:
+              - name: WEB-2160p
+              - name: Remux-1080p - Anime
+
+          - trash_ids:
+              - 9b27ab6498ec0f31a3353992e19434ca # DV (w/o HDR fallback)
+            assign_scores_to:
+              - name: WEB-2160p
+                score: -10000
+              - name: Remux-1080p - Anime
+                score: -10000
+
+          - trash_ids:
+              - 0d7824bb924701997f874e7ff7d4844a # TrueHD ATMOS
+              - 9d00418ba386a083fbf4d58235fc37ef # DTS X
+              - b6fbafa7942952a13e17e2b1152b539a # ATMOS (undefined)
+              - 4232a509ce60c4e208d13825b7c06264 # DD+ ATMOS
+              - 1808e4b9cee74e064dfae3f1db99dbfe # TrueHD
+              - c429417a57ea8c41d57e6990a8b0033f # DTS-HD MA
+              - 851bd64e04c9374c51102be3dd9ae4cc # FLAC
+              - 30f70576671ca933adbdcfc736a69718 # PCM
+              - cfa5fbd8f02a86fc55d8d223d06a5e1f # DTS-HD HRA
+              - 63487786a8b01b7f20dd2bc90dd4a477 # DD+
+              - c1a25cd67b5d2e08287c957b1eb903ec # DTS-ES
+              - 5964f2a8b3be407d083498e4459d05d0 # DTS
+              - a50b8a0c62274a7c38b09a9619ba9d86 # AAC
+              - dbe00161b08a25ac6154c55f95e6318d # DD
+              - 3e8b714263b26f486972ee1e0fe7606c # MP3
+              - 28f6ef16d61e2d1adfce3156ed8257e3 # Opus
+            assign_scores_to:
+              - name: WEB-2160p
+              - name: Remux-1080p - Anime
+
+        quality_profiles:
+          - name: WEB-2160p
+            qualities:
+              - name: Remux-2160p
+              - name: WEB 2160p
+                qualities:
+                  - WEBDL-2160p
+                  - WEBRip-2160p
+              - name: Remux-1080p
+              - name: WEB 1080p
+                qualities:
+                  - WEBDL-1080p
+                  - WEBRip-1080p
+              - name: Bluray-2160p
+              - name: Bluray-1080p
+              - name: HDTV-1080p
+              - name: WEB 720p
+                qualities:
+                  - WEBDL-720p
+                  - WEBRip-720p
+              - name: Bluray-720p
+              - name: HDTV-720p
+            reset_unmatched_scores:
+              enabled: true
+
+          - name: Remux-1080p - Anime
+            qualities:
+              - name: Remux-2160p
+                qualities:
+                  - Bluray-2160p Remux
+              - name: WEB 2160p
+                qualities:
+                  - WEBDL-2160p
+                  - WEBRip-2160p
+              - name: Bluray-1080p
+                qualities:
+                  - Bluray-1080p Remux
+                  - Bluray-1080p
+              - name: WEB 1080p
+                qualities:
+                  - WEBDL-1080p
+                  - WEBRip-1080p
+                  - HDTV-1080p
+              - name: Bluray-720p
+              - name: WEB 720p
+                qualities:
+                  - WEBDL-720p
+                  - WEBRip-720p
+                  - HDTV-720p
+              - name: Bluray-480p
+              - name: WEB 480p
+                qualities:
+                  - WEBDL-480p
+                  - WEBRip-480p
+              - name: DVD
+              - name: SDTV
+            reset_unmatched_scores:
+              enabled: true
+
+      sonarr_ru:
+        base_url: http://sonarr-ru.media.svc.cluster.local:8989
+        api_key: !env_var SONARR_RU_API_KEY
+        delete_old_custom_formats: true
+        replace_existing_custom_formats: true
+
+        include:
+          # Quality sizes
+          - template: sonarr-quality-definition-series
+
+          # WEB-1080p (same profile for RU)
+          - template: sonarr-v4-quality-profile-web-1080p
+          - template: sonarr-v4-custom-formats-web-1080p
+
+        quality_profiles:
+          - name: WEB-1080p
+            reset_unmatched_scores:
+              enabled: true
